@@ -206,7 +206,7 @@ export default function About() {
               {/* Info rows */}
               {[
                 { icon: '🎓', label: 'Education', value: 'MCA 2026 · SRM University' },
-                { icon: '📍', label: 'Location', value: 'Meerut, Uttar Pradesh' },
+                { icon: '📍', label: 'Location', value: 'Hapur, Uttar Pradesh' },
                 { icon: '✉️', label: 'Email', value: 'gargtejasvi076@gmail.com' },
               ].map(({ icon, label, value }) => (
                 <div key={label} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 12 }}>

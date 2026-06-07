@@ -122,7 +122,7 @@ export default function Navbar() {
 
         {/* Mobile: Resume + Hamburger */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }} className="flex md:hidden">
-          <motion.a
+          {/* <motion.a
             href="/resume.pdf"
             download="Tejasvi_Garg_Resume.pdf"
             whileTap={{ scale: 0.92 }}
@@ -136,10 +136,10 @@ export default function Navbar() {
               padding: '6px 10px', borderRadius: 6, textDecoration: 'none',
               cursor: 'pointer',
             }}
-          >
-            <Download size={11} />
-            CV
-          </motion.a>
+          > */}
+            {/* <Download size={11} /> */}
+            {/* CV */}
+          {/* </motion.a> */}
 
           <motion.button
             whileTap={{ scale: 0.9 }}
