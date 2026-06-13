@@ -1,9 +1,15 @@
-import { useEffect, useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { motion, useInView, AnimatePresence } from 'framer-motion'
 import VanillaTilt from 'vanilla-tilt'
-import { ExternalLink, Play } from 'lucide-react'
+import { ExternalLink, Play, X } from 'lucide-react'
 
 function haptic(ms = 15) { if (navigator?.vibrate) navigator.vibrate(ms) }
+
+function getDriveEmbedUrl(url) {
+  const match = url.match(/\/file\/d\/([^/]+)/)
+  if (match) return `https://drive.google.com/file/d/${match[1]}/preview`
+  return url
+}
 
 function TiltCard({ children, style }) {
   const ref = useRef(null)
@@ -24,7 +30,7 @@ const projects = [
     tags: ['React Native', 'Firebase', 'Groq AI', 'Firestore', 'Google Auth'],
     cta: 'Play Store',
     link: 'https://play.google.com/store/apps/details?id=com.socialproject.devsocial',
-    demo: 'https://play.google.com/store/apps/details?id=com.socialproject.devsocial',
+    demo: 'https://drive.google.com/file/d/1QHK8-VxV00SKLDHF7Z3AxE-bw2JFO8vR/view?usp=drivesdk',
     icon: '⚡', color: '#22c55e',
   },
   {
@@ -44,16 +50,73 @@ const projects = [
     id: 'portfolio', name: 'Portfolio Website',
     description: 'This very portfolio — built with a 3D futuristic glassmorphism design, smooth scroll animations, and a cinematic developer aesthetic.',
     tags: ['React.js', 'Tailwind CSS', 'Framer Motion', 'Vite'],
-    demo: '#',
+    demo: 'https://your-portfolio-domain.vercel.app',
     icon: '🔮', color: '#22d3ee',
   },
 ]
+
+function VideoModal({ url, onClose }) {
+  const isDrive = url.includes('drive.google.com')
+  const embedUrl = isDrive ? getDriveEmbedUrl(url) : url
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 9999,
+        background: 'rgba(5, 8, 20, 0.85)', backdropFilter: 'blur(6px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '1rem',
+      }}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          position: 'relative', width: '100%', maxWidth: 900,
+          aspectRatio: '16/9', borderRadius: 14, overflow: 'hidden',
+          border: '1px solid rgba(34,211,238,0.3)',
+          boxShadow: '0 0 40px rgba(14,165,233,0.25)',
+          background: '#0a0a1a',
+        }}
+      >
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute', top: 10, right: 10, zIndex: 10,
+            background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)',
+            borderRadius: 999, width: 36, height: 36,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#f1f5f9', cursor: 'pointer',
+          }}
+        >
+          <X size={18} />
+        </button>
+        <iframe
+          src={embedUrl}
+          allow="autoplay; fullscreen"
+          allowFullScreen
+          style={{ width: '100%', height: '100%', border: 'none' }}
+          title="Live Demo"
+        />
+      </motion.div>
+    </motion.div>
+  )
+}
 
 export default function Projects() {
   const sectionRef = useRef(null)
   const inView = useInView(sectionRef, { once: true, margin: '-60px' })
   const featured = projects[0]
   const rest = projects.slice(1)
+  const [activeVideo, setActiveVideo] = useState(null)
+
+  const openVideo = (url) => (e) => {
+    e.preventDefault()
+    haptic(15)
+    setActiveVideo(url)
+  }
 
   return (
     <section id="projects" ref={sectionRef} style={{
@@ -128,7 +191,7 @@ export default function Projects() {
                   </div>
 
                   {/* Button row */}
-                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', position: 'relative', zIndex: 2 }}>
                     <motion.a
                       href={featured.link} target="_blank" rel="noopener noreferrer"
                       whileTap={{ scale: 0.95 }}
@@ -139,16 +202,16 @@ export default function Projects() {
                         border: '1px solid rgba(34,197,94,0.4)', color: '#86efac',
                         fontFamily: 'Orbitron', fontSize: '0.65rem', letterSpacing: 2,
                         padding: '9px 16px', borderRadius: 8, textDecoration: 'none', fontWeight: 600,
-                        cursor: 'pointer',
+                        cursor: 'pointer', position: 'relative', zIndex: 2,
                       }}
                     >
                       <ExternalLink size={12} /> {featured.cta}
                     </motion.a>
 
                     <motion.a
-                      href={featured.demo} target="_blank" rel="noopener noreferrer"
+                      href={featured.demo}
+                      onClick={openVideo(featured.demo)}
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => haptic(15)}
                       style={{
                         display: 'inline-flex', alignItems: 'center', gap: 7,
                         background: 'linear-gradient(135deg, #0ea5e9, #22d3ee)',
@@ -156,6 +219,7 @@ export default function Projects() {
                         fontFamily: 'Orbitron', fontSize: '0.65rem', letterSpacing: 2,
                         padding: '9px 16px', borderRadius: 8, textDecoration: 'none', fontWeight: 700,
                         cursor: 'pointer', boxShadow: '0 0 16px rgba(14,165,233,0.35)',
+                        position: 'relative', zIndex: 2,
                       }}
                     >
                       <Play size={12} fill="#0a0a1a" /> LIVE DEMO
@@ -209,9 +273,11 @@ export default function Projects() {
                 {/* Live Demo button for non-featured cards */}
                 {proj.demo && !proj.inDev && (
                   <motion.a
-                    href={proj.demo} target="_blank" rel="noopener noreferrer"
+                    href={proj.demo}
+                    onClick={proj.demo.includes('drive.google.com') ? openVideo(proj.demo) : () => haptic(15)}
+                    target={proj.demo.includes('drive.google.com') ? undefined : '_blank'}
+                    rel={proj.demo.includes('drive.google.com') ? undefined : 'noopener noreferrer'}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => haptic(15)}
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: 7,
                       background: `linear-gradient(135deg, ${proj.color}22, ${proj.color}11)`,
@@ -220,7 +286,7 @@ export default function Projects() {
                       fontFamily: 'Orbitron', fontSize: '0.62rem', letterSpacing: 1.5,
                       padding: '8px 14px', borderRadius: 8, textDecoration: 'none',
                       fontWeight: 600, width: 'fit-content', cursor: 'pointer',
-                      marginTop: 'auto',
+                      marginTop: 'auto', position: 'relative', zIndex: 2,
                     }}
                   >
                     <Play size={11} fill={proj.color} /> LIVE DEMO
@@ -231,6 +297,10 @@ export default function Projects() {
           </motion.div>
         ))}
       </div>
+
+      <AnimatePresence>
+        {activeVideo && <VideoModal url={activeVideo} onClose={() => setActiveVideo(null)} />}
+      </AnimatePresence>
     </section>
   )
 }
